@@ -11,4 +11,6 @@ var (
 	GetUserByEmail string
 	//go:embed users/check_is_user_exist.sql
 	IsUserExist string
+	//go:embed users/update.sql
+	UpdateUser string
 )

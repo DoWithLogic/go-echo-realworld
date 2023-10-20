@@ -19,9 +19,10 @@ import (
 
 type (
 	Usecase interface {
-		Login(ctx context.Context, request dtos.UserLoginRequest) (response dtos.UserLoginResponse, httpCode int, err error)
-		Create(ctx context.Context, payload dtos.CreateUserRequest) (userID int64, httpCode int, err error)
-		Detail(ctx context.Context, id int64) (detail dtos.UserDetailResponse, httpCode int, err error)
+		Login(ctx context.Context, request dtos.UserRequest) (response dtos.UserResponse, httpCode int, err error)
+		Create(ctx context.Context, request dtos.UserRequest) (response dtos.UserResponse, httpCode int, err error)
+		Detail(ctx context.Context, id int64) (response dtos.UserResponse, httpCode int, err error)
+		Update(ctx context.Context, request dtos.UserRequest, identity middleware.CustomClaims) (response dtos.UserResponse, httpCode int, err error)
 	}
 
 	usecase struct {
@@ -35,13 +36,13 @@ func NewUseCase(repo repository.Repository, log *zerolog.Logger, cfg config.Conf
 	return &usecase{repo, log, cfg}
 }
 
-func (uc *usecase) Login(ctx context.Context, request dtos.UserLoginRequest) (response dtos.UserLoginResponse, httpCode int, err error) {
-	dataLogin, err := uc.repo.GetUserByEmail(ctx, request.Email)
+func (uc *usecase) Login(ctx context.Context, request dtos.UserRequest) (response dtos.UserResponse, httpCode int, err error) {
+	dataLogin, err := uc.repo.GetUserByEmail(ctx, request.Data.Email)
 	if err != nil {
 		return response, http.StatusInternalServerError, err
 	}
 
-	if !strings.EqualFold(utils.Decrypt(dataLogin.Password, uc.cfg), request.Password) {
+	if !strings.EqualFold(utils.Decrypt(dataLogin.Password, uc.cfg), request.Data.Password) {
 		return response, http.StatusUnauthorized, apperror.ErrInvalidPassword
 	}
 
@@ -61,26 +62,53 @@ func (uc *usecase) Login(ctx context.Context, request dtos.UserLoginRequest) (re
 	return entities.NewUserLogin(dataLogin, token), http.StatusOK, nil
 }
 
-func (uc *usecase) Create(ctx context.Context, payload dtos.CreateUserRequest) (userID int64, httpCode int, err error) {
-	if exist := uc.repo.IsUserExist(ctx, payload.Email); exist {
-		return userID, http.StatusConflict, apperror.ErrEmailAlreadyExist
+func (uc *usecase) Create(ctx context.Context, req dtos.UserRequest) (res dtos.UserResponse, httpCode int, err error) {
+	if exist := uc.repo.IsUserExist(ctx, req.Data.Email); exist {
+		return res, http.StatusConflict, apperror.ErrEmailAlreadyExist
 	}
 
-	userID, err = uc.repo.SaveNewUser(ctx, entities.NewCreateUser(payload, uc.cfg))
-	if err != nil {
+	if _, err = uc.repo.SaveNewUser(ctx, entities.NewCreateUser(req, uc.cfg)); err != nil {
 		uc.log.Z().Err(err).Msg("users.uc.Create.SaveNewUser")
 
-		return userID, http.StatusInternalServerError, err
+		return res, http.StatusInternalServerError, err
 	}
 
-	return userID, http.StatusOK, nil
+	res.Data = dtos.User{
+		Email:    req.Data.Email,
+		UserName: req.Data.UserName,
+	}
+
+	return res, http.StatusOK, nil
 }
 
-func (uc *usecase) Detail(ctx context.Context, id int64) (detail dtos.UserDetailResponse, httpCode int, err error) {
+func (uc *usecase) Detail(ctx context.Context, id int64) (detail dtos.UserResponse, httpCode int, err error) {
 	userDetail, err := uc.repo.GetUserByID(ctx, id)
 	if err != nil {
 		return detail, http.StatusInternalServerError, err
 	}
 
 	return entities.NewUserDetail(userDetail), http.StatusOK, nil
+}
+
+func (uc *usecase) Update(
+	/*req*/ ctx context.Context, request dtos.UserRequest, identity middleware.CustomClaims) (
+	/*res*/ response dtos.UserResponse, httpCode int, err error,
+) {
+	if err = uc.repo.UpdateUser(ctx, entities.NewUpdateUser(request, uc.cfg, identity)); err != nil {
+		return response, http.StatusInternalServerError, err
+	}
+
+	detail, err := uc.repo.GetUserByID(ctx, identity.UserID)
+	if err != nil {
+		return response, http.StatusInternalServerError, err
+	}
+
+	response.Data = dtos.User{
+		UserName: detail.UserName,
+		Email:    detail.Email,
+		Image:    detail.Image,
+		Bio:      detail.Bio,
+	}
+
+	return response, http.StatusOK, nil
 }

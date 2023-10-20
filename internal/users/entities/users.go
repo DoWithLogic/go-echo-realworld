@@ -2,10 +2,6 @@ package entities
 
 import (
 	"time"
-
-	"github.com/DoWithLogic/go-echo-realworld/config"
-	"github.com/DoWithLogic/go-echo-realworld/internal/users/dtos"
-	"github.com/DoWithLogic/go-echo-realworld/pkg/utils"
 )
 
 type (
@@ -26,13 +22,3 @@ type (
 		PessimisticLocking bool
 	}
 )
-
-func NewCreateUser(data dtos.CreateUserRequest, cfg config.Config) Users {
-	return Users{
-		UserName:  data.UserName,
-		Email:     data.Email,
-		Password:  utils.Encrypt(data.Password, cfg),
-		CreatedAt: time.Now(),
-		CreatedBy: "SYSTEM",
-	}
-}

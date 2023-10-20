@@ -20,6 +20,7 @@ type (
 		GetUserByID(context.Context, int64, ...entities.LockingOpt) (entities.Users, error)
 		GetUserByEmail(context.Context, string) (entities.Users, error)
 		IsUserExist(ctx context.Context, email string) bool
+		UpdateUser(context.Context, entities.Users) error
 	}
 
 	repository struct {
@@ -144,4 +145,26 @@ func (repo *repository) GetUserByEmail(ctx context.Context, email string) (userD
 	}
 
 	return userDetail, err
+}
+
+func (repo *repository) UpdateUser(ctx context.Context, req entities.Users) error {
+	args := utils.Array{
+		req.UserName, req.UserName,
+		req.Email, req.Email,
+		req.Password, req.Password,
+		req.Bio, req.Bio,
+		req.Image, req.Image,
+		req.UpdatedAt,
+		req.UpdatedBy,
+		req.UserID,
+	}
+
+	err := new(datasource.DataSource).ExecSQL(repo.conn.ExecContext(ctx, repository_query.UpdateUser, args...)).Scan(nil, nil)
+	if err != nil {
+		repo.log.Z().Err(err).Msg("users.repository.UpdateUser.ExecContext")
+
+		return err
+	}
+
+	return nil
 }

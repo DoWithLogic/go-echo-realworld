@@ -2,7 +2,7 @@ SELECT
     u.id,
     u.email,
     u.username,
-    u.bio,
-    u.image
+    IFNULL(u.bio, ''),
+    IFNULL(u.image, '')
 FROM users u
 WHERE u.id = ?
