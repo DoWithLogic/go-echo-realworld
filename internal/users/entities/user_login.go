@@ -4,12 +4,13 @@ import (
 	"github.com/DoWithLogic/go-echo-realworld/internal/users/dtos"
 )
 
-func NewUserLogin(data Users, token string) dtos.UserLoginResponse {
-	return dtos.UserLoginResponse{
-		Email:    data.Email,
-		Token:    "",
-		UserName: data.UserName,
-		Bio:      data.Bio,
-		Image:    data.Image,
+func NewUserLogin(res Users, token string) dtos.UserResponse {
+	return dtos.UserResponse{
+		Data: dtos.User{
+			Email: res.Email,
+			Token: token,
+			Bio:   res.Bio,
+			Image: res.Image,
+		},
 	}
 }

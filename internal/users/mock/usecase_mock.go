@@ -9,6 +9,7 @@ import (
 	reflect "reflect"
 
 	dtos "github.com/DoWithLogic/go-echo-realworld/internal/users/dtos"
+	middleware "github.com/DoWithLogic/go-echo-realworld/pkg/middleware"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -36,26 +37,26 @@ func (m *MockUsecase) EXPECT() *MockUsecaseMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockUsecase) Create(ctx context.Context, payload dtos.CreateUserRequest) (int64, int, error) {
+func (m *MockUsecase) Create(ctx context.Context, request dtos.UserRequest) (dtos.UserResponse, int, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, payload)
-	ret0, _ := ret[0].(int64)
+	ret := m.ctrl.Call(m, "Create", ctx, request)
+	ret0, _ := ret[0].(dtos.UserResponse)
 	ret1, _ := ret[1].(int)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockUsecaseMockRecorder) Create(ctx, payload interface{}) *gomock.Call {
+func (mr *MockUsecaseMockRecorder) Create(ctx, request interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockUsecase)(nil).Create), ctx, payload)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockUsecase)(nil).Create), ctx, request)
 }
 
 // Detail mocks base method.
-func (m *MockUsecase) Detail(ctx context.Context, id int64) (dtos.UserDetailResponse, int, error) {
+func (m *MockUsecase) Detail(ctx context.Context, id int64) (dtos.UserResponse, int, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Detail", ctx, id)
-	ret0, _ := ret[0].(dtos.UserDetailResponse)
+	ret0, _ := ret[0].(dtos.UserResponse)
 	ret1, _ := ret[1].(int)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
@@ -68,10 +69,10 @@ func (mr *MockUsecaseMockRecorder) Detail(ctx, id interface{}) *gomock.Call {
 }
 
 // Login mocks base method.
-func (m *MockUsecase) Login(ctx context.Context, request dtos.UserLoginRequest) (dtos.UserLoginResponse, int, error) {
+func (m *MockUsecase) Login(ctx context.Context, request dtos.UserRequest) (dtos.UserResponse, int, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Login", ctx, request)
-	ret0, _ := ret[0].(dtos.UserLoginResponse)
+	ret0, _ := ret[0].(dtos.UserResponse)
 	ret1, _ := ret[1].(int)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
@@ -81,4 +82,20 @@ func (m *MockUsecase) Login(ctx context.Context, request dtos.UserLoginRequest) 
 func (mr *MockUsecaseMockRecorder) Login(ctx, request interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Login", reflect.TypeOf((*MockUsecase)(nil).Login), ctx, request)
+}
+
+// Update mocks base method.
+func (m *MockUsecase) Update(ctx context.Context, request dtos.UserRequest, identity middleware.CustomClaims) (dtos.UserResponse, int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, request, identity)
+	ret0, _ := ret[0].(dtos.UserResponse)
+	ret1, _ := ret[1].(int)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockUsecaseMockRecorder) Update(ctx, request, identity interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockUsecase)(nil).Update), ctx, request, identity)
 }

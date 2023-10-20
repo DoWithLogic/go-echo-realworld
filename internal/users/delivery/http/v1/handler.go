@@ -18,6 +18,7 @@ type (
 		Login(c echo.Context) error
 		CreateUser(c echo.Context) error
 		UserDetail(c echo.Context) error
+		UpdateUser(c echo.Context) error
 	}
 
 	handlers struct {
@@ -32,14 +33,14 @@ func NewHandlers(uc usecases.Usecase, log *zerolog.Logger) Handlers {
 
 func (h *handlers) Login(c echo.Context) error {
 	var (
-		request dtos.UserLoginRequest
+		request dtos.UserRequest
 	)
 
 	if err := c.Bind(&request); err != nil {
 		return c.JSON(http.StatusBadRequest, response.NewResponseError(http.StatusBadRequest, response.MsgFailed, err.Error()))
 	}
 
-	if err := request.Validate(); err != nil {
+	if err := request.ValidateLogin(); err != nil {
 		return c.JSON(http.StatusBadRequest, response.NewResponseError(http.StatusBadRequest, response.MsgFailed, err.Error()))
 	}
 
@@ -48,17 +49,17 @@ func (h *handlers) Login(c echo.Context) error {
 		return c.JSON(httpCode, response.NewResponseError(httpCode, response.MsgFailed, err.Error()))
 	}
 
-	return c.JSON(httpCode, response.NewResponse(httpCode, response.MsgSuccess, authData))
+	return c.JSON(httpCode, authData)
 }
 
 func (h *handlers) CreateUser(c echo.Context) error {
 	var (
 		ctx, cancel = context.WithTimeout(c.Request().Context(), time.Duration(30*time.Second))
-		payload     dtos.CreateUserRequest
+		request     dtos.UserRequest
 	)
 	defer cancel()
 
-	if err := c.Bind(&payload); err != nil {
+	if err := c.Bind(&request); err != nil {
 		h.log.Z().Err(err).Msg("users.handlers.CreateUser.Bind")
 
 		return c.JSON(http.StatusBadRequest, response.NewResponseError(
@@ -68,7 +69,7 @@ func (h *handlers) CreateUser(c echo.Context) error {
 		)
 	}
 
-	if err := payload.Validate(); err != nil {
+	if err := request.ValidateCreate(); err != nil {
 		h.log.Z().Err(err).Msg("users.handlers.CreateUser.Validate")
 
 		return c.JSON(http.StatusBadRequest, response.NewResponseError(
@@ -78,7 +79,7 @@ func (h *handlers) CreateUser(c echo.Context) error {
 		)
 	}
 
-	userID, httpCode, err := h.uc.Create(ctx, payload)
+	data, httpCode, err := h.uc.Create(ctx, request)
 	if err != nil {
 		return c.JSON(httpCode, response.NewResponseError(
 			httpCode,
@@ -87,7 +88,7 @@ func (h *handlers) CreateUser(c echo.Context) error {
 		)
 	}
 
-	return c.JSON(http.StatusOK, response.NewResponse(http.StatusOK, response.MsgSuccess, map[string]int64{"id": userID}))
+	return c.JSON(http.StatusOK, data)
 }
 
 func (h *handlers) UserDetail(c echo.Context) error {
@@ -101,5 +102,24 @@ func (h *handlers) UserDetail(c echo.Context) error {
 		return c.JSON(code, response.NewResponseError(code, response.MsgFailed, err.Error()))
 	}
 
-	return c.JSON(code, response.NewResponse(code, response.MsgSuccess, data))
+	return c.JSON(code, data)
+}
+
+func (h *handlers) UpdateUser(c echo.Context) error {
+	ctx, cancel := context.WithTimeout(c.Request().Context(), time.Duration(30*time.Second))
+	defer cancel()
+
+	var request dtos.UserRequest
+	if err := c.Bind(&request); err != nil {
+		return c.JSON(http.StatusBadRequest, response.NewResponseError(http.StatusBadRequest, response.MsgFailed, err.Error()))
+	}
+
+	identity := c.Get("identity").(*middleware.CustomClaims)
+
+	data, code, err := h.uc.Update(ctx, request, *identity)
+	if err != nil {
+		return c.JSON(code, response.NewResponseError(code, response.MsgFailed, err.Error()))
+	}
+
+	return c.JSON(code, data)
 }

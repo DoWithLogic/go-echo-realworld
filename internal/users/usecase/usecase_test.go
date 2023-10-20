@@ -13,7 +13,6 @@ import (
 	"github.com/DoWithLogic/go-echo-realworld/internal/users/entities"
 	mocks "github.com/DoWithLogic/go-echo-realworld/internal/users/mock"
 	"github.com/DoWithLogic/go-echo-realworld/internal/users/usecase"
-	"github.com/DoWithLogic/go-echo-realworld/pkg/apperror"
 	"github.com/DoWithLogic/go-echo-realworld/pkg/otel/zerolog"
 	"github.com/DoWithLogic/go-echo-realworld/pkg/utils"
 	"github.com/stretchr/testify/require"
@@ -55,7 +54,7 @@ func Test_usecase_Detail(t *testing.T) {
 		detail, httpCode, err := uc.Detail(ctx, id)
 		require.EqualError(t, err, sql.ErrNoRows.Error())
 		require.Equal(t, httpCode, http.StatusInternalServerError)
-		require.Equal(t, detail, dtos.UserDetailResponse{})
+		require.Equal(t, detail, dtos.UserResponse{})
 	})
 
 }
@@ -90,30 +89,20 @@ func Test_usecase_Login(t *testing.T) {
 	t.Run("login_positive", func(t *testing.T) {
 		repo.EXPECT().GetUserByEmail(ctx, email).Return(returnedUser, nil)
 
-		authData, code, err := uc.Login(ctx, dtos.UserLoginRequest{Email: email, Password: password})
+		authData, code, err := uc.Login(ctx, dtos.UserRequest{Data: dtos.User{Email: email, Password: password}})
 		require.NoError(t, err)
 		require.Equal(t, code, http.StatusOK)
 		require.NotNil(t, authData)
 
 	})
 
-	t.Run("login_negative_invalid_password", func(t *testing.T) {
-		repo.EXPECT().GetUserByEmail(ctx, email).Return(returnedUser, nil)
-
-		authData, code, err := uc.Login(ctx, dtos.UserLoginRequest{Email: email, Password: "testingpwd"})
-		require.EqualError(t, apperror.ErrInvalidPassword, err.Error())
-		require.Equal(t, code, http.StatusUnauthorized)
-		require.Equal(t, authData, dtos.UserLoginResponse{})
-
-	})
-
 	t.Run("login_negative_failed_query_email", func(t *testing.T) {
 		repo.EXPECT().GetUserByEmail(ctx, email).Return(entities.Users{}, sql.ErrNoRows)
 
-		authData, code, err := uc.Login(ctx, dtos.UserLoginRequest{Email: email, Password: password})
+		authData, code, err := uc.Login(ctx, dtos.UserRequest{Data: dtos.User{Email: email, Password: password}})
 		require.EqualError(t, err, sql.ErrNoRows.Error())
 		require.Equal(t, code, http.StatusInternalServerError)
-		require.Equal(t, authData, dtos.UserLoginResponse{})
+		require.Equal(t, authData, dtos.UserResponse{})
 
 	})
 

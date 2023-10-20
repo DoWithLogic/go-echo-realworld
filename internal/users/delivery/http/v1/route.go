@@ -7,8 +7,8 @@ import (
 )
 
 func MapUserRoute(version *echo.Group, h Handlers, cfg config.Config) {
-	users := version.Group("users")
-	users.POST("", h.CreateUser)
-	users.POST("/login", h.Login)
-	users.GET("/detail", h.UserDetail, middleware.AuthorizeJWT(cfg))
+	version.POST("users", h.CreateUser)
+	version.POST("users/login", h.Login)
+	version.GET("user", h.UserDetail, middleware.AuthorizeJWT(cfg))
+	version.PUT("user", h.UpdateUser, middleware.AuthorizeJWT(cfg))
 }
