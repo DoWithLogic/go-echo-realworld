@@ -13,4 +13,11 @@ var (
 	IsUserExist string
 	//go:embed users/update.sql
 	UpdateUser string
+
+	//go:embed profiles/get_by_username.sql
+	GetProfileByUserName string
+	//go:embed profiles/check_follow.sql
+	IsUserFollowed string
+	//go:embed profiles/insert.sql
+	InsertNewProfile string
 )

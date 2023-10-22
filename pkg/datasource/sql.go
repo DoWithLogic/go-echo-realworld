@@ -167,6 +167,10 @@ func (x query) Scan(row func(i int) utils.Array) error {
 		idx++
 	}
 
+	if idx == 0 {
+		return ErrDataNotFound
+	}
+
 	return err
 }
 

@@ -7,10 +7,7 @@ import (
 )
 
 type (
-	UserRequest struct {
-		Data User `json:"user"`
-	}
-	UserResponse struct {
+	UserData struct {
 		Data User `json:"user"`
 	}
 
@@ -40,7 +37,7 @@ type (
 	}
 )
 
-func (x UserRequest) ValidateCreate() error {
+func (x UserData) ValidateCreate() error {
 	return validation.ValidateStruct(&x.Data,
 		validation.Field(&x.Data.UserName, validation.Required),
 		validation.Field(&x.Data.Email, validation.Required),
@@ -48,7 +45,7 @@ func (x UserRequest) ValidateCreate() error {
 	)
 }
 
-func (x UserRequest) ValidateLogin() error {
+func (x UserData) ValidateLogin() error {
 	return validation.ValidateStruct(&x.Data,
 		validation.Field(&x.Data.Email, validation.Required),
 		validation.Field(&x.Data.Password, validation.Required),

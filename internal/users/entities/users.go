@@ -6,7 +6,6 @@ import (
 	"github.com/DoWithLogic/go-echo-realworld/config"
 	"github.com/DoWithLogic/go-echo-realworld/internal/users/dtos"
 	"github.com/DoWithLogic/go-echo-realworld/pkg/middleware"
-	"github.com/DoWithLogic/go-echo-realworld/pkg/utils"
 )
 
 type (
@@ -28,8 +27,8 @@ type (
 	}
 )
 
-func NewUserLogin(res Users, token string) dtos.UserResponse {
-	return dtos.UserResponse{
+func NewUserLogin(res Users, token string) dtos.UserData {
+	return dtos.UserData{
 		Data: dtos.User{
 			Email: res.Email,
 			Token: token,
@@ -39,16 +38,16 @@ func NewUserLogin(res Users, token string) dtos.UserResponse {
 	}
 }
 
-func NewCreateUser(data dtos.UserRequest, cfg config.Config) Users {
+func NewCreateUser(data dtos.UserData) Users {
 	return Users{
 		UserName:  data.Data.UserName,
 		Email:     data.Data.Email,
-		Password:  utils.Encrypt(data.Data.Password, cfg),
+		Password:  data.Data.Password,
 		CreatedAt: time.Now(),
 		CreatedBy: "SYSTEM",
 	}
 }
-func NewUpdateUser(req dtos.UserRequest, cfg config.Config, identity middleware.CustomClaims) Users {
+func NewUpdateUser(req dtos.UserData, cfg config.Config, identity middleware.CustomClaims) Users {
 	return Users{
 		UserID:    identity.UserID,
 		UserName:  req.Data.UserName,
@@ -61,8 +60,8 @@ func NewUpdateUser(req dtos.UserRequest, cfg config.Config, identity middleware.
 	}
 }
 
-func NewUserDetail(data Users) dtos.UserResponse {
-	return dtos.UserResponse{
+func NewUserDetail(data Users) dtos.UserData {
+	return dtos.UserData{
 		Data: dtos.User{
 			Email:    data.Email,
 			UserName: data.UserName,

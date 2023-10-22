@@ -11,4 +11,7 @@ func MapUserRoute(version *echo.Group, h Handlers, cfg config.Config) {
 	version.POST("users/login", h.Login)
 	version.GET("user", h.UserDetail, middleware.AuthorizeJWT(cfg))
 	version.PUT("user", h.UpdateUser, middleware.AuthorizeJWT(cfg))
+
+	version.GET("profiles/:username", h.ProfileDetail, middleware.OptionalAuthJWT(cfg))
+	version.POST("profiles/:username/follow", h.ProfileFollowUser, middleware.AuthorizeJWT(cfg))
 }

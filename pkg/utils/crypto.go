@@ -8,27 +8,27 @@ import (
 	"github.com/DoWithLogic/go-echo-realworld/config"
 )
 
-func Encrypt(pwd string, cfg config.Config) string {
+func Encrypt(pwd string, cfg config.Config) (string, error) {
 	return encrypt(pwd, []byte(cfg.Authentication.SecretKey), []byte(cfg.Authentication.SaltKey))
 }
 
-func Decrypt(pwd string, cfg config.Config) string {
+func Decrypt(pwd string, cfg config.Config) (string, error) {
 	return decrypt(pwd, []byte(cfg.Authentication.SecretKey), []byte(cfg.Authentication.SaltKey))
 }
 
-func encrypt(text string, key, salt []byte) string {
+func encrypt(text string, key, salt []byte) (string, error) {
 	plaintext := []byte(text)
 
 	// Create a new AES cipher block
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		panic(err.Error())
+		return "", err
 	}
 
 	// Create a GCM (Galois/Counter Mode) cipher using AES
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
-		panic(err.Error())
+		return "", err
 	}
 
 	// Create a nonce by concatenating salt and random bytes. Nonce must be unique for each encryption
@@ -41,26 +41,26 @@ func encrypt(text string, key, salt []byte) string {
 	// Include the nonce in the encrypted data
 	encryptedData := append(nonce, ciphertext...)
 
-	return base64.StdEncoding.EncodeToString(encryptedData)
+	return base64.StdEncoding.EncodeToString(encryptedData), nil
 }
 
-func decrypt(encryptedText string, key, salt []byte) string {
+func decrypt(encryptedText string, key, salt []byte) (string, error) {
 	// Decode base64
 	encryptedData, err := base64.StdEncoding.DecodeString(encryptedText)
 	if err != nil {
-		panic(err.Error())
+		return "", err
 	}
 
 	// Create a new AES cipher block
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		panic(err.Error())
+		return "", err
 	}
 
 	// Create a GCM (Galois/Counter Mode) cipher using AES
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
-		panic(err.Error())
+		return "", err
 	}
 
 	// Nonce size is determined by the choice of GCM mode and its associated size for the given key
@@ -72,8 +72,8 @@ func decrypt(encryptedText string, key, salt []byte) string {
 	// Decrypt the data using AES-GCM
 	plaintext, err := gcm.Open(nil, nonce, encryptedMessage, nil)
 	if err != nil {
-		panic(err.Error())
+		return "", err
 	}
 
-	return string(plaintext)
+	return string(plaintext), nil
 }

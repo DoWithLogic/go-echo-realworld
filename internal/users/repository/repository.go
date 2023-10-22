@@ -21,6 +21,10 @@ type (
 		GetUserByEmail(context.Context, string) (entities.Users, error)
 		IsUserExist(ctx context.Context, email string) bool
 		UpdateUser(context.Context, entities.Users) error
+
+		SaveNewProfile(ctx context.Context, req entities.Profile) (int64, error)
+		GetUserProfile(ctx context.Context, userName string) (entities.Profile, error)
+		IsUserFollowed(ctx context.Context, user_id, follow_user_id int64) bool
 	}
 
 	repository struct {
@@ -114,7 +118,7 @@ func (repo *repository) IsUserExist(ctx context.Context, email string) bool {
 
 	err := new(datasource.DataSource).QuerySQL(repo.conn.QueryContext(ctx, repository_query.IsUserExist, args...)).Scan(row)
 	if err != nil {
-		repo.log.Z().Err(err).Msg("users.repository.IsUserExist.QueryContext")
+		repo.log.Z().Warn().Err(err).Msg("users.repository.IsUserExist.QueryContext")
 
 		return false
 	}
@@ -140,7 +144,7 @@ func (repo *repository) GetUserByEmail(ctx context.Context, email string) (userD
 
 	err = new(datasource.DataSource).QuerySQL(repo.conn.QueryContext(ctx, repository_query.GetUserByEmail, args...)).Scan(row)
 	if err != nil {
-		repo.log.Z().Err(err).Msg("users.repository.GetUserByEmail.ExecContext")
+		repo.log.Z().Err(err).Msg("users.repository.GetUserByEmail.QueryContext")
 		return entities.Users{}, err
 	}
 
@@ -167,4 +171,72 @@ func (repo *repository) UpdateUser(ctx context.Context, req entities.Users) erro
 	}
 
 	return nil
+}
+
+func (repo *repository) SaveNewProfile(ctx context.Context, req entities.Profile) (int64, error) {
+	args := utils.Array{
+		req.UserID,
+		req.FollowUserID,
+		req.IsActive,
+		req.CreatedAt,
+		req.CreatedBy,
+	}
+
+	var profileID int64
+	err := new(datasource.DataSource).ExecSQL(repo.conn.ExecContext(ctx, repository_query.InsertNewProfile, args...)).Scan(nil, &profileID)
+	if err != nil {
+		repo.log.Z().Err(err).Msg("users.repository.SaveNewProfile.ExecContext")
+
+		return profileID, err
+	}
+
+	return profileID, nil
+}
+
+func (repo *repository) GetUserProfile(ctx context.Context, userName string) (entities.Profile, error) {
+	args := utils.Array{
+		userName,
+	}
+	var profile entities.Profile
+	row := func(idx int) utils.Array {
+		return utils.Array{
+			&profile.UserID,
+			&profile.UserName,
+			&profile.Bio,
+			&profile.Image,
+		}
+	}
+
+	err := new(datasource.DataSource).QuerySQL(repo.conn.QueryContext(ctx, repository_query.GetProfileByUserName, args...)).Scan(row)
+	if err != nil {
+		repo.log.Z().Err(err).Msg("users.repository.GetUserProfile.QueryContext")
+
+		return entities.Profile{}, err
+	}
+
+	return profile, nil
+}
+
+func (repo *repository) IsUserFollowed(ctx context.Context, user_id, follow_user_id int64) bool {
+	args := utils.Array{
+		user_id,
+		follow_user_id,
+	}
+
+	var profile entities.Profile
+	row := func(idx int) utils.Array {
+		return utils.Array{
+			&profile.UserID,
+			&profile.FollowUserID,
+		}
+	}
+
+	err := new(datasource.DataSource).QuerySQL(repo.conn.QueryContext(ctx, repository_query.IsUserFollowed, args...)).Scan(row)
+	if err != nil {
+		repo.log.Z().Warn().Err(err).Msg("users.repository.IsUserFollowed.QueryContext")
+
+		return false
+	}
+
+	return user_id == profile.UserID && follow_user_id == profile.FollowUserID
 }

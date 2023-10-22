@@ -37,10 +37,10 @@ func (m *MockUsecase) EXPECT() *MockUsecaseMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockUsecase) Create(ctx context.Context, request dtos.UserRequest) (dtos.UserResponse, int, error) {
+func (m *MockUsecase) Create(ctx context.Context, request dtos.UserData) (dtos.UserData, int, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", ctx, request)
-	ret0, _ := ret[0].(dtos.UserResponse)
+	ret0, _ := ret[0].(dtos.UserData)
 	ret1, _ := ret[1].(int)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
@@ -53,10 +53,10 @@ func (mr *MockUsecaseMockRecorder) Create(ctx, request interface{}) *gomock.Call
 }
 
 // Detail mocks base method.
-func (m *MockUsecase) Detail(ctx context.Context, id int64) (dtos.UserResponse, int, error) {
+func (m *MockUsecase) Detail(ctx context.Context, id int64) (dtos.UserData, int, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Detail", ctx, id)
-	ret0, _ := ret[0].(dtos.UserResponse)
+	ret0, _ := ret[0].(dtos.UserData)
 	ret1, _ := ret[1].(int)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
@@ -68,11 +68,27 @@ func (mr *MockUsecaseMockRecorder) Detail(ctx, id interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Detail", reflect.TypeOf((*MockUsecase)(nil).Detail), ctx, id)
 }
 
+// FollowUser mocks base method.
+func (m *MockUsecase) FollowUser(ctx context.Context, req dtos.ProfileRequest) (dtos.ProfileData, int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FollowUser", ctx, req)
+	ret0, _ := ret[0].(dtos.ProfileData)
+	ret1, _ := ret[1].(int)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// FollowUser indicates an expected call of FollowUser.
+func (mr *MockUsecaseMockRecorder) FollowUser(ctx, req interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FollowUser", reflect.TypeOf((*MockUsecase)(nil).FollowUser), ctx, req)
+}
+
 // Login mocks base method.
-func (m *MockUsecase) Login(ctx context.Context, request dtos.UserRequest) (dtos.UserResponse, int, error) {
+func (m *MockUsecase) Login(ctx context.Context, request dtos.UserData) (dtos.UserData, int, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Login", ctx, request)
-	ret0, _ := ret[0].(dtos.UserResponse)
+	ret0, _ := ret[0].(dtos.UserData)
 	ret1, _ := ret[1].(int)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
@@ -84,11 +100,27 @@ func (mr *MockUsecaseMockRecorder) Login(ctx, request interface{}) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Login", reflect.TypeOf((*MockUsecase)(nil).Login), ctx, request)
 }
 
+// ProfileDetail mocks base method.
+func (m *MockUsecase) ProfileDetail(ctx context.Context, req dtos.ProfileRequest) (dtos.ProfileData, int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ProfileDetail", ctx, req)
+	ret0, _ := ret[0].(dtos.ProfileData)
+	ret1, _ := ret[1].(int)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// ProfileDetail indicates an expected call of ProfileDetail.
+func (mr *MockUsecaseMockRecorder) ProfileDetail(ctx, req interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProfileDetail", reflect.TypeOf((*MockUsecase)(nil).ProfileDetail), ctx, req)
+}
+
 // Update mocks base method.
-func (m *MockUsecase) Update(ctx context.Context, request dtos.UserRequest, identity middleware.CustomClaims) (dtos.UserResponse, int, error) {
+func (m *MockUsecase) Update(ctx context.Context, request dtos.UserData, identity middleware.CustomClaims) (dtos.UserData, int, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", ctx, request, identity)
-	ret0, _ := ret[0].(dtos.UserResponse)
+	ret0, _ := ret[0].(dtos.UserData)
 	ret1, _ := ret[1].(int)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
