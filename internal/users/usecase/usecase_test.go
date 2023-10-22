@@ -54,7 +54,7 @@ func Test_usecase_Detail(t *testing.T) {
 		detail, httpCode, err := uc.Detail(ctx, id)
 		require.EqualError(t, err, sql.ErrNoRows.Error())
 		require.Equal(t, httpCode, http.StatusInternalServerError)
-		require.Equal(t, detail, dtos.UserResponse{})
+		require.Equal(t, detail, dtos.UserData{})
 	})
 
 }
@@ -80,16 +80,19 @@ func Test_usecase_Login(t *testing.T) {
 	repo := mocks.NewMockRepository(ctrl)
 	uc := usecase.NewUseCase(repo, zerolog.NewZeroLog(ctx, os.Stdout), config)
 
+	encrypt, err := utils.Encrypt(password, config)
+	require.NoError(t, err)
+
 	returnedUser := entities.Users{
 		UserID:   1,
 		Email:    email,
-		Password: utils.Encrypt(password, config),
+		Password: encrypt,
 	}
 
 	t.Run("login_positive", func(t *testing.T) {
 		repo.EXPECT().GetUserByEmail(ctx, email).Return(returnedUser, nil)
 
-		authData, code, err := uc.Login(ctx, dtos.UserRequest{Data: dtos.User{Email: email, Password: password}})
+		authData, code, err := uc.Login(ctx, dtos.UserData{Data: dtos.User{Email: email, Password: password}})
 		require.NoError(t, err)
 		require.Equal(t, code, http.StatusOK)
 		require.NotNil(t, authData)
@@ -99,10 +102,10 @@ func Test_usecase_Login(t *testing.T) {
 	t.Run("login_negative_failed_query_email", func(t *testing.T) {
 		repo.EXPECT().GetUserByEmail(ctx, email).Return(entities.Users{}, sql.ErrNoRows)
 
-		authData, code, err := uc.Login(ctx, dtos.UserRequest{Data: dtos.User{Email: email, Password: password}})
+		authData, code, err := uc.Login(ctx, dtos.UserData{Data: dtos.User{Email: email, Password: password}})
 		require.EqualError(t, err, sql.ErrNoRows.Error())
 		require.Equal(t, code, http.StatusInternalServerError)
-		require.Equal(t, authData, dtos.UserResponse{})
+		require.Equal(t, authData, dtos.UserData{})
 
 	})
 

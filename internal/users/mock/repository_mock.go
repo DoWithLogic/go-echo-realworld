@@ -86,6 +86,21 @@ func (mr *MockRepositoryMockRecorder) GetUserByID(arg0, arg1 interface{}, arg2 .
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByID", reflect.TypeOf((*MockRepository)(nil).GetUserByID), varargs...)
 }
 
+// GetUserProfile mocks base method.
+func (m *MockRepository) GetUserProfile(ctx context.Context, userName string) (entities.Profile, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserProfile", ctx, userName)
+	ret0, _ := ret[0].(entities.Profile)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserProfile indicates an expected call of GetUserProfile.
+func (mr *MockRepositoryMockRecorder) GetUserProfile(ctx, userName interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserProfile", reflect.TypeOf((*MockRepository)(nil).GetUserProfile), ctx, userName)
+}
+
 // IsUserExist mocks base method.
 func (m *MockRepository) IsUserExist(ctx context.Context, email string) bool {
 	m.ctrl.T.Helper()
@@ -98,6 +113,35 @@ func (m *MockRepository) IsUserExist(ctx context.Context, email string) bool {
 func (mr *MockRepositoryMockRecorder) IsUserExist(ctx, email interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsUserExist", reflect.TypeOf((*MockRepository)(nil).IsUserExist), ctx, email)
+}
+
+// IsUserFollowed mocks base method.
+func (m *MockRepository) IsUserFollowed(ctx context.Context, user_id, follow_user_id int64) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsUserFollowed", ctx, user_id, follow_user_id)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// IsUserFollowed indicates an expected call of IsUserFollowed.
+func (mr *MockRepositoryMockRecorder) IsUserFollowed(ctx, user_id, follow_user_id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsUserFollowed", reflect.TypeOf((*MockRepository)(nil).IsUserFollowed), ctx, user_id, follow_user_id)
+}
+
+// SaveNewProfile mocks base method.
+func (m *MockRepository) SaveNewProfile(ctx context.Context, req entities.Profile) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SaveNewProfile", ctx, req)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SaveNewProfile indicates an expected call of SaveNewProfile.
+func (mr *MockRepositoryMockRecorder) SaveNewProfile(ctx, req interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveNewProfile", reflect.TypeOf((*MockRepository)(nil).SaveNewProfile), ctx, req)
 }
 
 // SaveNewUser mocks base method.

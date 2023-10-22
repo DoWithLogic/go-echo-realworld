@@ -32,6 +32,37 @@ func GenerateJWT(data CustomClaims, secretKey string) (string, error) {
 	return tokenString, nil
 }
 
+func OptionalAuthJWT(cfg config.Config) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			if c.Request().Header.Get("Authorization") != "" {
+				auth, err := extractBearerToken(c)
+				if err != nil {
+					return c.JSON(http.StatusUnauthorized, response.NewResponseError(http.StatusUnauthorized, response.MsgFailed, err.Error()))
+				}
+
+				token, err := jwt.ParseWithClaims(*auth, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+					return []byte(cfg.Authentication.Key), nil
+				})
+
+				if err != nil {
+					return c.JSON(http.StatusUnauthorized, response.NewResponseError(http.StatusUnauthorized, response.MsgFailed, err.Error()))
+				}
+
+				if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
+					c.Set("identity", claims)
+
+					return next(c)
+				}
+
+				return c.JSON(http.StatusUnauthorized, response.NewResponseError(http.StatusUnauthorized, response.MsgFailed, err.Error()))
+			}
+
+			return next(c)
+		}
+	}
+}
+
 func AuthorizeJWT(cfg config.Config) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
